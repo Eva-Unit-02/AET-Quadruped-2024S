@@ -1,68 +1,67 @@
 #include <Servo.h>
 
-char rec;
-boolean newData = false;
 
-Leg leg1;
+class Leg {
+  private:
+    String name;
+    Servo hip;
+    Servo leg;
+    Servo knee;
+      
+  public:
+    Leg(int hipId, int legId, int kneeId);
+
+    Leg();
+
+    void setHip(int ang) {
+      hip.write(ang);
+    }
+    void setLeg(int ang) {
+      leg.write(ang);
+    }
+    void setKnee(int ang) {
+      knee.write(ang);
+    }
+};
+
+
+Leg::Leg(String n, int hipId, int legId, int kneeId) {
+  name = n;
+  hip.write(90);
+  leg.write(0);
+  knee.write(0);
+
+  hip.attach(hipId + 1);
+  leg.attach(legId + 1);
+  knee.attach(kneeId + 1);
+}
+
+Leg::Leg() {
+}
+
+
+
+
 
 void setup() {
-    Serial.begin(9600);
-    Serial.println("<Arduino is ready>");
-    leg1 = new Leg(1,2,3);
+  Leg leg1;
+  // Leg leg2;
+  Leg leg3;
+  Leg leg4;
+
+  leg1 = Leg("one", 1, 2, 3);
+  leg3 = Leg("two", 7, 8, 9);
+  leg4 = Leg("three", 10, 11, 12);
+  
 }
 
 void loop() {
-    recvOneChar();
-    showNewData();
-}
-
-void recvOneChar() {
-    if (Serial.available() > 0) {
-        rec = Serial.read();
-        newData = true;
-    }
-}
-
-void showNewData() {
-    if (newData == true && (rec == 'a' || rec == 's' || rec == "d")) {
-        Serial.print("This just in ... ");
-        Serial.println(rec);
-
-        if (rec == 'a')
-            leg1.setHip(0);
-        if (rec == 's')
-            leg1.setLeg(0);
-        if (rec == 'd')
-            leg1.setKnee(0);
-
-        newData = false;
-    }
-}
-
-// The write() method of servos do not set them to the desired angle in real life
-// this method enables angle in code to actually correspond with real life angles
-// real range is 0 to 270 degrees
-int toCodeAngle(int rAng) {
-    return rAng*0.8;
+  // leg4.setLeg(180);
+  // leg4.setKnee(120);
 }
 
 
-class Leg {
-    private:
-        Servo hip;
-        Servo leg;
-        Servo knee;
-        
-    public:
-        Leg(int hipId, int legId, int kneeId) {
-            hip.attach(hipId+1);
-            leg.attach(legId+1);
-            knee.attach(kneeId+1);
-        }
 
-        setHip(int ang) {hip.write(ang);}
-        setLeg(int ang) {leg.write(ang);}
-        setKnee(int ang) {knee.write(ang);}
-}
+
 
 
