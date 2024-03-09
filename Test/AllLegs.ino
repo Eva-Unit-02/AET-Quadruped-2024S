@@ -3,134 +3,205 @@
 
 
 double MAX_ANGLE = 260.0;
+double LEG_LENGTH = 11; // in cm
+double Z_OFFSET = 3;
 
-Servo FR[3]; //max 257
-Servo FL[3]; //max 253
-Servo BR[3]; //max
-Servo BL[3]; //max
+String cmd = "";
 
-Servo* FEET[4] = {FR, FL, BR, BL};
+Servo FR[3];
+Servo FL[3];
+Servo BR[3];
+Servo BL[3];
 
-// Servo* Servos = {FR[0], FR[1], FR[2],
-//                 FL[0], FL[1], FL[2],
-//                 BR[0], BR[1], BR[2],
-//                 BL[0], BL[1], BL[2]};
 
-double offSets[12] = {130,0,10,
-                    130,0,10,
-                    130,0,10,
-                    130,0,10};
+struct foot {
+  int id;
+  Servo hip;
+  Servo leg;
+  Servo knee;
+};
 
-double angMap[12] = {130,0,10,
-                    130,0,10,
-                    130,0,10,
-                    130,0,10};
+//leg 0 is when the long side of servo is 13 degrees tilted
+double offsets[12] = {130,0,10,
+                    135,20,-4,
+                    125,13,17.5,
+                    135,21,10};
+
+double multipliers[12] = {1, 1.048, 0.995,
+                    1, 1, 1.08,
+                    1, 0.975, 1.05,
+                    1, 0.965, 1};
+
+double angMap[12] = {0,0,0,
+                    0,0,0,
+                    0,0,0,
+                    0,0,0};
+
+double posMap[12] = {0,0,0,
+                    0,0,0,
+                    0,0,0,
+                    0,0,0};
+
+double prevAng[12] = {0,0,0,
+                    0,0,0,
+                    0,0,0,
+                    0,0,0};
 
 
 // Servo s;
 
 void setup() {
-  TurnServo(FR[0], 130, false);
-  FR[0].attach(2);
-  delay(500);
-
-  TurnServo(FR[1], 0, false);
-  FR[1].attach(3);
-  delay(500);
-  
-  TurnServo(FR[2], 8.5, false);
-  FR[2].attach(4);
-  delay(500);
-
-
-  TurnServo(BR[0], 130, false);
-  BR[0].attach(8);
-  delay(500);
-
-  TurnServo(BR[1], 0, false);
-  BR[1].attach(9);
-  delay(500);
-  
-  TurnServo(BR[2], 8, false);
-  BR[2].attach(10);
-  delay(500);
-
-  TurnServo(BL[0], 130, true);
-  BL[0].attach(11);
-  delay(500);
-
-  TurnServo(BL[1], 0, true);
-  BL[1].attach(12);
-  delay(500);
-  
-  TurnServo(BL[2], 10, true);
-  BL[2].attach(13);
-  delay(500);
-
-
-
-
-  // delay(2000);
-  // FR[1].writeMicroseconds(AngToSer(90));
-
-  // BR[1].writeMicroseconds(AngToSer(90));
-
-  // TurnServo(BL[1], 90, true);
-
-  // delay(2000);
-
-  // TurnServo(FR[2], 90, false);
-
-  // TurnServo(BR[2], 90, false);
-
-  // TurnServo(BL[2], 90, true);
+  Serial.begin(9600);
+  Serial.println("<Arduino is ready>");
 
   delay(2000);
+  UpdateAllFeet();
+
+  for (int i=0; i<3; i++) {
+    FR[i].attach(i+2);
+    delay(500);
+    FL[i].attach(i+5);
+    delay(500);
+    BR[i].attach(i+8);
+    delay(500);
+    BL[i].attach(i+11);
+    delay(500);
+    
+  }
+ 
+  delay(5000);
   
 }
 
 void loop() {
-  if (angMap[1] < 90) {
-    angMap[1] += 0.5;
-    angMap[2] += 0.5;
-    UpdateFoot();
-    delay(10);
-  }
+  getCmd();
+  // if (angMap[1] < 60) {
+  //   angMap[1] += 0.5;
+  //   angMap[2] += 0.9;
 
-}
+  //   angMap[4] += 0.5;
+  //   angMap[5] += 0.9;
 
-void UpdateFoot() {
-  
-  // for (int i=0; i<2; i++) {
-  //   for (int j=0; j<3; j++) {
-  //     TurnServo(FEET[i][j], angMap[(i+1)*(j+1)-1], false);
-  //   }
+  //   angMap[7] += 0.5;
+  //   angMap[8] += 0.9;
+
+  //   angMap[10] += 0.5;
+  //   angMap[11] += 0.9;
+  //   UpdateAllFeet();
+  //   delay(20);
   // }
-  for (int i=1; i<3; i++) {
-    TurnServo(FR[i], angMap[i], false);
+
+  // IK(BL, 5, 0, 10, true);
+
+  if (cmd=="stand") {
+    if (MoveAllZ(16, 10)) {
+      cmd == "";
+    }
   }
 
+  if (cmd=="sit") {
+    if (MoveAllZ(3, 10)) {
+      cmd == "";
+    }
+  }
+
+  
+
+  IKUpdateAllFeet();
 }
 
+void getCmd() {
+  if (Serial.available() > 0 && Serial.read() != '\n' && cmd == "") {
+    cmd = Serial.readString();
+    
+    Serial.print("This just in ... ");
+    Serial.println(cmd);
+  }
+}
+
+
+
+bool MoveAllZ(double setpoint, int ms) {
+  double amt = -0.1 * (posMap[2] - setpoint)/abs(posMap[2] - setpoint);
+  // if (abs(posMap[2] - setpoint) >= 0.1) {
+  if (posMap[2] != setpoint) {
+    posMap[2] += amt;
+    posMap[5] += amt;
+    posMap[8] += amt;
+    posMap[11] += amt;
+    delay(ms);
+    return false;
+  }
+  return true;
+}
+
+void StandUp() {
+  MoveAllZ(17, 10);
+}
+
+void IKUpdateAllFeet() {
+  IK(FR, posMap[0], posMap[1], posMap[2], false);
+  IK(FL, posMap[3], posMap[4], posMap[5], true);
+  IK(BR, posMap[6], posMap[7], posMap[8], false);
+  IK(BL, posMap[9], posMap[10], posMap[11], true);
+}
+
+void UpdateAllFeet() {
+  for (int i=0; i<3; i++) {
+    TurnServo(FR[i], angMap[i] * multipliers[i] + offsets[i], false);
+    TurnServo(FL[i], angMap[i+3] * multipliers[i+3] + offsets[i+3], true);
+    TurnServo(BR[i], angMap[i+6] * multipliers[i+6] + offsets[i+6], false);
+    TurnServo(BL[i], angMap[i+9] * multipliers[i+9] + offsets[i+9], true);
+  }
+}
+
+// Converts from degree to Miliseconds for servos
+// ang: setpoint in degrees
 int AngToMS(double ang) {
   return round(ang / 180 * 2000) + 500;
 }
 
-// Max Input
+// Converts from degree to Miliseconds that correpond to real life angle for servos
+// Needs to further converted with offsets and multipliers for specific servos
+// ang: setpoint in degrees
 int AngToSer(double ang) {
-  if (ang < 0) ang = 0;
-  if (ang > MAX_ANGLE) ang = MAX_ANGLE;
-  return round(ang / MAX_ANGLE * 2000) + 500;
-
+  int ms = round(ang / MAX_ANGLE * 2000) + 500;
+  if (ms < 500) ms = 500;
+  if (ms > 2500) ms = 2500;
+  return ms;
 }
 
-// left: if a servo is on the left side of the dog
-void TurnServo(Servo s, double ang, boolean left) {
-  if (left) {
-    ang = MAX_ANGLE - ang; // -------------------------------------------------------------------originally 180
+// Turns a servo to given position
+// If servo is mounted in the opposite direction from desired, inverse the motor
+// ang: setpoint in degrees
+// inverse: if a servo needs to be inversed
+void TurnServo(Servo s, double ang, boolean inverse) {
+  if (inverse) {
+    ang = MAX_ANGLE - ang;
   } 
   s.writeMicroseconds(AngToSer(ang));
 }
 
+// void TimedTurnServo(Servo s, double ang, boolean inverse, int ms) {
+//   if (abs(angMap[id-1] - ang) >= 1) {
+//     TurnServo(s, ang/100, inverse);
+//   }
+//   delay(ms);
+// }
+
+void IK(Servo foot[3], double x, double y, double z, bool inverse) {
+  z += Z_OFFSET;
+  double d = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+  if (d > LEG_LENGTH * 2) return;
+  double theta = acos(d / (2 * LEG_LENGTH)) * 180 / M_PI;
+  double a1 = 90 - atan2(z, y) * 180 / M_PI;
+  double a2 = atan2(z, x) * 180 / M_PI - theta;
+  double a3 = 180 - 2 * theta;
+  
+  TurnServo(foot[0], a1, inverse);
+  TurnServo(foot[1], a2, inverse);
+  TurnServo(foot[2], a3, inverse);
+
+}
 
 
