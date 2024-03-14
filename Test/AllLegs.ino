@@ -3,34 +3,28 @@
 
 
 double MAX_ANGLE = 260.0;
-double LEG_LENGTH = 11; // in cm
-double Z_OFFSET = 3;
+double LEG_LENGTH = 10.5; // in cm
+
 
 String cmd = "";
 
-Servo FR[3];
-Servo FL[3];
-Servo BR[3];
-Servo BL[3];
+Servo FR[3]; //num 1
+Servo FL[3]; //num 2
+Servo BR[3]; //num 3
+Servo BL[3]; //num 4
 
-
-struct foot {
-  int id;
-  Servo hip;
-  Servo leg;
-  Servo knee;
-};
+int step = 1;
 
 //leg 0 is when the long side of servo is 13 degrees tilted
 double offsets[12] = {130,0,10,
-                    135,20,-4,
+                    135,20,15,
                     125,13,17.5,
-                    135,21,10};
+                    135,21,5};
 
 double multipliers[12] = {1, 1.048, 0.995,
-                    1, 1, 1.08,
+                    1, 1, 0.99,
                     1, 0.975, 1.05,
-                    1, 0.965, 1};
+                    1, 0.965, 1.02};
 
 double angMap[12] = {0,0,0,
                     0,0,0,
@@ -42,13 +36,12 @@ double posMap[12] = {0,0,0,
                     0,0,0,
                     0,0,0};
 
-double prevAng[12] = {0,0,0,
-                    0,0,0,
-                    0,0,0,
-                    0,0,0};
+// double stepPathMap[5][3] = { {},
+//                               {},
+//                               {},
+//                               {},
+//                               {}}
 
-
-// Servo s;
 
 void setup() {
   Serial.begin(9600);
@@ -58,92 +51,211 @@ void setup() {
   UpdateAllFeet();
 
   for (int i=0; i<3; i++) {
-    FR[i].attach(i+2);
-    delay(500);
+    // FR[i].attach(i+2);
+    delay(100);
     FL[i].attach(i+5);
-    delay(500);
-    BR[i].attach(i+8);
-    delay(500);
-    BL[i].attach(i+11);
-    delay(500);
+    delay(100);
+    // BR[i].attach(i+8);
+    delay(100);
+    // BL[i].attach(i+11);
+    delay(100);
     
   }
  
-  delay(5000);
+  delay(2000);
   
 }
 
 void loop() {
   getCmd();
-  // if (angMap[1] < 60) {
-  //   angMap[1] += 0.5;
-  //   angMap[2] += 0.9;
 
-  //   angMap[4] += 0.5;
-  //   angMap[5] += 0.9;
+  if (cmd == "clear") {
+    Serial.print("cmd cleared");
+    cmd = "";
+  }
 
-  //   angMap[7] += 0.5;
-  //   angMap[8] += 0.9;
-
-  //   angMap[10] += 0.5;
-  //   angMap[11] += 0.9;
-  //   UpdateAllFeet();
-  //   delay(20);
+  // if (cmd == "step") {
+  //   if (step == 1) {
+  //     posMap[3] = 2;
+  //     posMap[5] = 10;
+  //     delay(500);
+  //     step = 2;
+  //   } 
+  //   else if (step == 2) {
+  //     posMap[3] = 2;
+  //     posMap[5] = 8;
+  //     delay(500);
+  //     step = 3;
+  //   } else if (step == 3) {
+  //     posMap[3] = -2;
+  //     posMap[5] = 8;
+  //     delay(500);
+  //     step = 4;
+  //   } else if (step == 4) {
+  //     posMap[3] = -2;
+  //     posMap[5] = 10;
+  //     delay(500);
+  //     step = 1;
+  //   }    
   // }
 
-  // IK(BL, 5, 0, 10, true);
-
-  if (cmd=="stand") {
-    if (MoveAllZ(16, 10)) {
-      cmd == "";
-    }
+  if (cmd == "step") {
+    if (step == 1) {
+      posMap[3] = 2;
+      posMap[5] = 10;
+      delay(500);
+      step = 2;
+    } 
+    else if (step == 2) {
+      posMap[3] = 2;
+      posMap[5] = 8;
+      delay(500);
+      step = 3;
+    } else if (step == 3) {
+      posMap[3] = -2;
+      posMap[5] = 8;
+      delay(500);
+      step = 4;
+    } else if (step == 4) {
+      posMap[3] = -2;
+      posMap[5] = 10;
+      delay(500);
+      step = 1;
+    }    
   }
 
-  if (cmd=="sit") {
-    if (MoveAllZ(3, 10)) {
-      cmd == "";
-    }
-  }
+  // if (cmd == "forward") {
+  //   if (step == 1 && MoveLeg(2, 0, 10, 0.1, 0, 0, 2, 8)) {
+  //     step = 2;
+  //   } else if (step == 2 && MoveLeg(2, 0, 8, 0, 0, -0.5, 2, 8)) {
+  //     step = 3;
+  //   } else if (step == 3 && MoveLeg(-2, 0, 8, -0.5, 0, 0, 2, 8)) {
+  //     step = 4;
+  //   } else if (step == 4 && MoveLeg(-2, 0, 10, 0, 0, 0.5, 2, 8)) {
+  //     step = 1;
+  //   }    
+  // }
 
   
+  
 
+  // if (cmd == "stand") {
+  //   posMap[2] += 0.5;
+  //   posMap[5] += 0.5;
+  //   posMap[8] += 0.5;
+  //   posMap[11] += 0.5;
+  //   delay(5);
+  //   if (posMap[2] == 10) {
+  //     Serial.println("stand done");
+  //     cmd = "";
+  //   }
+  // }
+
+  // if (cmd == "stand") {
+  //   if (MoveLeg(0, 0, 10, 0, 0, 0.5, 2, 10)) {
+  //     cmd = "";
+  //   }
+  // }
+
+  // if (cmd == "sit") {
+  //   if (MoveLeg(0, 0, 0, 0, 0, -0.5, 2, 10)) {
+  //     cmd = "";
+  //   }
+  // }
+
+  // if (cmd == "sit") {
+  //   posMap[2] -= 0.5;
+  //   posMap[5] -= 0.5;
+  //   posMap[8] -= 0.5;
+  //   posMap[11] -= 0.5;
+  //   delay(5);
+  //   if (posMap[2] == 0) {
+  //     Serial.println("sit done");
+  //     cmd = "";
+  //   }
+  // }
+
+
+  
   IKUpdateAllFeet();
+  UpdateAllFeet();
 }
+
+
 
 void getCmd() {
-  if (Serial.available() > 0 && Serial.read() != '\n' && cmd == "") {
-    cmd = Serial.readString();
-    
-    Serial.print("This just in ... ");
-    Serial.println(cmd);
+  if (Serial.available() > 0 && (cmd == "" || cmd == "forward")) {
+    if (Serial.peek() != '\n') {
+      cmd = Serial.readStringUntil('\n');
+
+      Serial.print("This just in ... ");
+      Serial.println(cmd);
+
+    } else {
+      Serial.read();
+    } 
   }
 }
 
 
-
-bool MoveAllZ(double setpoint, int ms) {
-  double amt = -0.1 * (posMap[2] - setpoint)/abs(posMap[2] - setpoint);
-  // if (abs(posMap[2] - setpoint) >= 0.1) {
-  if (posMap[2] != setpoint) {
-    posMap[2] += amt;
-    posMap[5] += amt;
-    posMap[8] += amt;
-    posMap[11] += amt;
-    delay(ms);
-    return false;
-  }
-  return true;
+double getFootX(int footNum) {
+  return posMap[(footNum-1)*3];
 }
 
-void StandUp() {
-  MoveAllZ(17, 10);
+double getFootY(int footNum) {
+  return posMap[(footNum-1)*3+1];
+}
+
+double getFootZ(int footNum) {
+  return posMap[(footNum-1)*3+2];
+}
+
+double tolerance = 0.00001; 
+bool checkFootPos(int footNum, double x, double y, double z) {
+  return (checkFootX(footNum, x) &&
+      checkFootY(footNum, y) &&
+      checkFootZ(footNum, z));
+}
+
+bool checkFootX(int footNum, double setpoint) {
+  return (fabs(setpoint - posMap[(footNum - 1) * 3]) < tolerance);
+}
+
+bool checkFootY(int footNum, double setpoint) {
+  return (fabs(setpoint - posMap[(footNum - 1) * 3 + 1]) < tolerance);
+}
+
+bool checkFootZ(int footNum, double setpoint) {
+  return (fabs(setpoint - posMap[(footNum - 1) * 3 + 2]) < tolerance);
+}
+
+// interval should be numbers devisable by 2 or 5
+void SetFootX(int footNum, double x0, double xf, int interval, int del) {
+  int index = (footNum-1)*3;
+  double step = (xf-x0) / interval;
+  posMap[index] += step;
+  delay(del);
+}
+
+void SetFootY(int footNum, double y0, double yf, int interval, int del) {
+  int index = (footNum-1)*3+1;
+  double step = (yf-yf) / interval;
+  posMap[index] += step;
+  delay(del);
+}
+
+void SetFootZ(int footNum, double z0, double zf, int interval, int del) {
+  int index = (footNum-1)*3+2;
+  double step = (zf-z0) / interval;
+  posMap[index] += step;
+  delay(del);
 }
 
 void IKUpdateAllFeet() {
-  IK(FR, posMap[0], posMap[1], posMap[2], false);
-  IK(FL, posMap[3], posMap[4], posMap[5], true);
-  IK(BR, posMap[6], posMap[7], posMap[8], false);
-  IK(BL, posMap[9], posMap[10], posMap[11], true);
+  IK(1, posMap[0], posMap[1], posMap[2], false);
+  IK(2, posMap[3], posMap[4], posMap[5], true);
+  IK(3, posMap[6], posMap[7], posMap[8], false);
+  IK(4, posMap[9], posMap[10], posMap[11], true);
 }
 
 void UpdateAllFeet() {
@@ -182,26 +294,32 @@ void TurnServo(Servo s, double ang, boolean inverse) {
   s.writeMicroseconds(AngToSer(ang));
 }
 
-// void TimedTurnServo(Servo s, double ang, boolean inverse, int ms) {
-//   if (abs(angMap[id-1] - ang) >= 1) {
-//     TurnServo(s, ang/100, inverse);
-//   }
-//   delay(ms);
-// }
+double X_OFFSET = 0;
+double Y_OFFSET = 6.75;
+double Z_OFFSET = 0.5;
+double hipL = 6.75;
+double thighL = 10.75;
+double shinL = 10.75;
 
-void IK(Servo foot[3], double x, double y, double z, bool inverse) {
+void IK(int footNum, double x, double y, double z, bool inverse) {
+  x += X_OFFSET;
+  y += Y_OFFSET;
   z += Z_OFFSET;
-  double d = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-  if (d > LEG_LENGTH * 2) return;
-  double theta = acos(d / (2 * LEG_LENGTH)) * 180 / M_PI;
-  double a1 = 90 - atan2(z, y) * 180 / M_PI;
-  double a2 = atan2(z, x) * 180 / M_PI - theta;
-  double a3 = 180 - 2 * theta;
-  
-  TurnServo(foot[0], a1, inverse);
-  TurnServo(foot[1], a2, inverse);
-  TurnServo(foot[2], a3, inverse);
 
+  double D = sqrt(pow(z, 2) + pow(y, 2) - pow(hipL, 2));
+  double G = sqrt(pow(D, 2) + pow(x, 2));
+  double hyp = pow(thighL, 2) + pow(shinL, 2);
+
+  double a1 = atan2(y, z) + atan2(D, hipL);
+  double a3 = acos((pow(G, 2) - hyp) / (-2 * thighL * shinL));
+  double a2 = atan2(x, D) + asin(shinL * sin(a3) / G);
+
+  a3 = a3 * 180 / M_PI;
+  a1 = 90 - a1 * 180 / M_PI;
+  a2 = 90 - a2 * 180 / M_PI;
+
+  angMap[(footNum-1)*3] = a1;
+  angMap[(footNum-1)*3+1] = a2;
+  angMap[(footNum-1)*3+2] = a3;
 }
-
 
