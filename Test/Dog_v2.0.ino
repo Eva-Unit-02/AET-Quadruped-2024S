@@ -13,18 +13,18 @@ const double tolerance = 0.001;
 // Offsets are added to the input angles of a servo before feeding into servo
 const double offsets[4][3] = {
   {125+2, 1.5, -5}, 
-  {170+2+3, 58, 20},
-  {125-1, 10, 50},
-  {135-2, 18.5, 71}
+  {170+2+3-1.5, 58, 20},
+  {125-1, 10, 40},
+  {135-2-2, 18.5, 71}
 };
 
 // multipliers are multiplied with the input angle of a servo before feeding into servo
 // Used to adjust small imperfections of servos
 const double multipliers[4][3] = {
   {1, 1.15, 1.12},
-  {1, 1, 1},
-  {1, 1.1, 1.12},
-  {1, 0.985, 1}
+  {1, 1.08, 1},
+  {1, 1.1, 1.08},
+  {1, 0.992, 1}
 };
 
 // holds the angles that are fed into servos
