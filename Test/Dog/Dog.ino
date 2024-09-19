@@ -7,41 +7,41 @@ String state = "";
 
 // servo config constants -------------------------------------
 Servo servos[4][3];
-const int servo_pin[4][3] = {{2, 3, 4}, {5, 6, 7}, {8, 9, 10}, {11, 12, 13}};
-const double tolerance = 0.001; 
+const int servo_pin[4][3] = { { 2, 3, 4 }, { 5, 6, 7 }, { 8, 9, 10 }, { 11, 12, 13 } };
+const double tolerance = 0.001;
 
 // Offsets are added to the input angles of a servo before feeding into servo
 const double offsets[4][3] = {
-  {125+2, 1.5, -5}, 
-  {170+2+3-1.5, 58, 20},
-  {125-1, 10, 40},
-  {135-2-2, 18.5, 71}
+  { 125 + 2, 1.5, 0 - 15}, //4 was -20
+  { 175 - 1.5, 58, 65 + 15 }, 
+  { 124, 10 - 5 + 5, 40 + 10 + 5 -10},
+  { 131, 25, 125 + 10}
 };
 
 // multipliers are multiplied with the input angle of a servo before feeding into servo
 // Used to adjust small imperfections of servos
 const double multipliers[4][3] = {
-  {1, 1.15, 1.12},
-  {1, 1.08, 1},
-  {1, 1.1, 1.08},
-  {1, 0.992, 1}
+  { 1, 1.15, 1.15 }, // before: 1.12
+  { 1, 1.08, 1 },
+  { 1, 1.1, 1.08 },
+  { 1, 0.992, 1 + 0.2}
 };
 
 // holds the angles that are fed into servos
 // automatically updated by IK
-double angMap[4][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+double angMap[4][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
 
 // holds the increment of each axis of a foot that it should move every cycle
 // before inverse kinematics
-double speedMap[4][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+double speedMap[4][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
 
 // holds the position a foot now
 // before inverse kinematics
-double posNow[4][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+double posNow[4][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
 
 // holds the desired position of a foot
 // before inverse kinematics
-double posExpect[4][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+double posExpect[4][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
 
 // Foot dimensions constants --------------------------------------------
 // unit in cm
@@ -65,8 +65,9 @@ const double Z_OFFSET = 0.5;
 double STAND_Z = 13;
 double DEFAULT_X = 0;
 double DEFAULT_Y = 0;
-double WALK_X = 2; // 2
-double WALK_Y = 0;
+double WALK_X = 0 + 3;  // 2
+double WALK_Y = 0 + 2;
+
 double WALK_Z = 3;
 
 double KEEP = 999;
@@ -82,12 +83,12 @@ void updateWalkPos() {
   walkPos[0][1] = DEFAULT_Y;
   walkPos[0][2] = STAND_Z;
 
-  walkPos[1][0] = DEFAULT_X + WALK_X/3;
-  walkPos[1][1] = DEFAULT_Y + WALK_Y/3;
+  walkPos[1][0] = DEFAULT_X + WALK_X / 3;
+  walkPos[1][1] = DEFAULT_Y + WALK_Y / 3;
   walkPos[1][2] = STAND_Z;
 
-  walkPos[2][0] = DEFAULT_X + 2*WALK_X/3;
-  walkPos[2][1] = DEFAULT_Y + 2*WALK_Y/3;
+  walkPos[2][0] = DEFAULT_X + 2 * WALK_X / 3;
+  walkPos[2][1] = DEFAULT_Y + 2 * WALK_Y / 3;
   walkPos[2][2] = STAND_Z;
 
   walkPos[3][0] = DEFAULT_X + WALK_X;
@@ -95,35 +96,42 @@ void updateWalkPos() {
   walkPos[3][2] = STAND_Z;
 
   walkPos[4][0] = DEFAULT_X - WALK_X;
-  walkPos[4][1] = DEFAULT_Y - WALK_Y/2;
+  walkPos[4][1] = DEFAULT_Y - WALK_Y / 2;
   walkPos[4][2] = STAND_Z - WALK_Z;
 
   walkPos[5][0] = DEFAULT_X - WALK_X;
   walkPos[5][1] = DEFAULT_Y - WALK_Y;
   walkPos[5][2] = STAND_Z;
 
-  walkPos[6][0] = DEFAULT_X - 2*WALK_X/3;
-  walkPos[6][1] = DEFAULT_Y - 2*WALK_Y/3;
+  walkPos[6][0] = DEFAULT_X - 2 * WALK_X / 3;
+  walkPos[6][1] = DEFAULT_Y - 2 * WALK_Y / 3;
   walkPos[6][2] = STAND_Z;
 
-  walkPos[7][0] = DEFAULT_X - WALK_X/3;
-  walkPos[7][1] = DEFAULT_Y - WALK_Y/3;
+  walkPos[7][0] = DEFAULT_X - WALK_X / 3;
+  walkPos[7][1] = DEFAULT_Y - WALK_Y / 3;
   walkPos[7][2] = STAND_Z;
 }
 
 double dancePos[4][3] = {
-  {0, 0, STAND_Z},
-  {0, 0, STAND_Z + 0.5},
-  {0, 0, STAND_Z},
-  {0, 0, STAND_Z - 0.5}
+  { 0, 0, STAND_Z },
+  { 0, 0, STAND_Z + 0.5 },
+  { 0, 0, STAND_Z },
+  { 0, 0, STAND_Z - 0.5 }
 };
 
 double dancePos2[4][3] = {
-  {0, 0, STAND_Z},
-  {0, 0.5, STAND_Z + 0.5},
-  {0, 0, STAND_Z},
-  {0, -0.5, STAND_Z - 0.5}
+  { 0, 0, STAND_Z },
+  { 0, 0.5, STAND_Z + 0.5 },
+  { 0, 0, STAND_Z },
+  { 0, -0.5, STAND_Z - 0.5 }
 };
+
+double sidestep[4][3] = {
+  {0, },
+  {},
+  {},
+  {}
+}
 
 
 // Setup and Loop ---------------------------------------------------------------------------
@@ -135,11 +143,10 @@ void setup() {
   updateAllFeet();
 
   delay(3000);
-  
+
   attachServos();
 
   updateWalkPos();
-
 }
 
 void loop() {
@@ -170,12 +177,12 @@ void loop() {
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
-    WALK_X = 2;
+    WALK_X = 2 + 1;
     WALK_Y = 0;
-    WALK_Z = 3;
+    WALK_Z = 3 + 1;
 
     updateWalkPos();
-    
+
     walk(1);
 
     // Serial.print("WalkDonw");
@@ -195,7 +202,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     walk(1);
   }
 
@@ -213,7 +220,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     walk(1);
   }
 
@@ -231,7 +238,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     turn(1);
   }
 
@@ -249,7 +256,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     turn(1);
   }
 
@@ -267,7 +274,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     turn(1);
   }
 
@@ -285,7 +292,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     dance(1);
   }
 
@@ -303,7 +310,7 @@ void loop() {
     WALK_Z = 3;
 
     updateWalkPos();
-    
+
     dance2(1);
   }
 
@@ -334,58 +341,58 @@ void sit() {
 }
 
 void walk(int steps) {
-    for (int i=1; i<=8 * steps; i++) {
-      setFootPos(0, walkPos[i%8][0], walkPos[i%8][1], walkPos[i%8][2], 100);
-      setFootPos(3, walkPos[i%8][0], walkPos[i%8][1], walkPos[i%8][2], 100);
+  for (int i = 1; i <= 8 * steps; i++) {
+    setFootPos(0, walkPos[i % 8][0], walkPos[i % 8][1], walkPos[i % 8][2], 100);
+    setFootPos(3, walkPos[i % 8][0], walkPos[i % 8][1], walkPos[i % 8][2], 100);
 
-      setFootPos(1, walkPos[(i+4)%8][0], walkPos[(i+4)%8][1], walkPos[(i+4)%8][2], 100);
-      setFootPos(2, walkPos[(i+4)%8][0], walkPos[(i+4)%8][1], walkPos[(i+4)%8][2], 100);
-      waitAllReach();
-    } 
+    setFootPos(1, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 100);
+    setFootPos(2, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 100);
+    waitAllReach();
+  }
 }
 
 void turn(int steps) {
-    for (int i=1; i<=8 * steps; i++) {
-      setFootPos(0, walkPos[i%8][0], -walkPos[i%8][1], walkPos[i%8][2], 90);
-      setFootPos(3, walkPos[i%8][0], -walkPos[i%8][1], walkPos[i%8][2], 90);
+  for (int i = 1; i <= 8 * steps; i++) {
+    setFootPos(0, walkPos[i % 8][0], -walkPos[i % 8][1], walkPos[i % 8][2], 90);
+    setFootPos(3, walkPos[i % 8][0], -walkPos[i % 8][1], walkPos[i % 8][2], 90);
 
-      setFootPos(1, walkPos[(i+4)%8][0], walkPos[(i+4)%8][1], walkPos[(i+4)%8][2], 90);
-      setFootPos(2, walkPos[(i+4)%8][0], walkPos[(i+4)%8][1], walkPos[(i+4)%8][2], 90);
-      waitAllReach();
-    } 
+    setFootPos(1, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 90);
+    setFootPos(2, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 90);
+    waitAllReach();
+  }
 }
 
 void dance(int steps) {
-  for (int i=1; i<= 4* steps; i++) {
-      setFootPos(0, dancePos[i%4][0], dancePos[i%4][1], dancePos[i%4][2], 200);
-      setFootPos(1, dancePos[i%4][0], dancePos[i%4][1], dancePos[i%4][2], 200);
+  for (int i = 1; i <= 4 * steps; i++) {
+    setFootPos(0, dancePos[i % 4][0], dancePos[i % 4][1], dancePos[i % 4][2], 200);
+    setFootPos(1, dancePos[i % 4][0], dancePos[i % 4][1], dancePos[i % 4][2], 200);
 
-      setFootPos(2, dancePos[(i+2)%4][0], dancePos[(i+2)%4][1], dancePos[(i+2)%4][2], 200);
-      setFootPos(3, dancePos[(i+2)%4][0], dancePos[(i+2)%4][1], dancePos[(i+2)%4][2], 200);
-      waitAllReach();
+    setFootPos(2, dancePos[(i + 2) % 4][0], dancePos[(i + 2) % 4][1], dancePos[(i + 2) % 4][2], 200);
+    setFootPos(3, dancePos[(i + 2) % 4][0], dancePos[(i + 2) % 4][1], dancePos[(i + 2) % 4][2], 200);
+    waitAllReach();
   }
 }
 
 void dance2(int steps) {
-  for (int i=1; i<= 4* steps; i++) {
-      setFootPos(0, dancePos2[i%4][0], dancePos2[i%4][1], dancePos2[i%4][2], 200);
-      setFootPos(2, dancePos2[i%4][0], dancePos2[i%4][1], dancePos2[i%4][2], 200);
+  for (int i = 1; i <= 4 * steps; i++) {
+    setFootPos(0, dancePos2[i % 4][0], dancePos2[i % 4][1], dancePos2[i % 4][2], 200);
+    setFootPos(2, dancePos2[i % 4][0], dancePos2[i % 4][1], dancePos2[i % 4][2], 200);
 
-      setFootPos(1, dancePos2[(i+2)%4][0], dancePos2[(i+2)%4][1], dancePos2[(i+2)%4][2], 200);
-      setFootPos(3, dancePos2[(i+2)%4][0], dancePos2[(i+2)%4][1], dancePos2[(i+2)%4][2], 200);
-      waitAllReach();
+    setFootPos(1, dancePos2[(i + 2) % 4][0], dancePos2[(i + 2) % 4][1], dancePos2[(i + 2) % 4][2], 200);
+    setFootPos(3, dancePos2[(i + 2) % 4][0], dancePos2[(i + 2) % 4][1], dancePos2[(i + 2) % 4][2], 200);
+    waitAllReach();
   }
 }
 
 void resetToStand() {
-  setFootPos(1, DEFAULT_X, 0, STAND_Z-WALK_Z, 50);
-  setFootPos(2, DEFAULT_X, 0, STAND_Z-WALK_Z, 50);
+  setFootPos(1, DEFAULT_X, 0, STAND_Z - WALK_Z, 50);
+  setFootPos(2, DEFAULT_X, 0, STAND_Z - WALK_Z, 50);
   waitAllReach();
   setFootPos(1, DEFAULT_X, 0, STAND_Z, 100);
   setFootPos(2, DEFAULT_X, 0, STAND_Z, 100);
   waitAllReach();
-  setFootPos(0, DEFAULT_X, 0, STAND_Z-WALK_Z, 50);
-  setFootPos(3, DEFAULT_X, 0, STAND_Z-WALK_Z, 50);
+  setFootPos(0, DEFAULT_X, 0, STAND_Z - WALK_Z, 50);
+  setFootPos(3, DEFAULT_X, 0, STAND_Z - WALK_Z, 50);
   waitAllReach();
   setFootPos(0, DEFAULT_X, 0, STAND_Z, 100);
   setFootPos(3, DEFAULT_X, 0, STAND_Z, 100);
@@ -409,9 +416,9 @@ void setFootPos(int footNum, double x, double y, double z, double time) {
   if (z != KEEP)
     length_z = z - posNow[footNum][2];
 
-  speedMap[footNum][0] = length_x / (time/20);
-  speedMap[footNum][1] = length_y / (time/20);
-  speedMap[footNum][2] = length_z / (time/20);
+  speedMap[footNum][0] = length_x / (time / 20);
+  speedMap[footNum][1] = length_y / (time / 20);
+  speedMap[footNum][2] = length_z / (time / 20);
 
   if (x != KEEP)
     posExpect[footNum][0] = x;
@@ -419,7 +426,6 @@ void setFootPos(int footNum, double x, double y, double z, double time) {
     posExpect[footNum][1] = y;
   if (z != KEEP)
     posExpect[footNum][2] = z;
-
 }
 
 
@@ -427,8 +433,8 @@ void setFootPos(int footNum, double x, double y, double z, double time) {
 
 // update and turn all the feet to commanded position
 void updateAllFeet() {
-  for (int i=0; i<4; i++) {
-    for (int j=0; j<3; j++) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 3; j++) {
       if (fabs(posNow[i][j] - posExpect[i][j]) > fabs(speedMap[i][j])) {
         posNow[i][j] += speedMap[i][j];
       } else {
@@ -436,8 +442,8 @@ void updateAllFeet() {
       }
     }
     IK(i, posNow[i][0], posNow[i][1], posNow[i][2], isReverse(i));
-    
-    for (int j=0; j<3; j++) {
+
+    for (int j = 0; j < 3; j++) {
       turnServo(servos[i][j], angMap[i][j] * multipliers[i][j] + offsets[i][j], isReverse(i));
     }
   }
@@ -452,12 +458,10 @@ bool isReverse(int footNum) {
 // wait for all servos on a leg to reach desired position
 void waitReach(int leg) {
   while (
-    posNow[leg][0] != posExpect[leg][0] ||
-    posNow[leg][1] != posExpect[leg][1] ||
-    posNow[leg][2] != posExpect[leg][2]) {
+    posNow[leg][0] != posExpect[leg][0] || posNow[leg][1] != posExpect[leg][1] || posNow[leg][2] != posExpect[leg][2]) {
     updateAllFeet();
     // UNDELAYED INFINITE WHILE LOOP IS BAD
-    delay(20);
+    delay(25);
   }
 }
 
@@ -494,7 +498,7 @@ int angToSer(double ang) {
 void turnServo(Servo s, double ang, boolean inverse) {
   if (inverse) {
     ang = MAX_ANGLE - ang;
-  } 
+  }
   s.writeMicroseconds(angToSer(ang));
 }
 
@@ -526,7 +530,7 @@ void IK(int footNum, double x, double y, double z, bool inverse) {
 // Attaching all servos to corresponding pin
 // Not in another for loop for ease of commenting out some foot to test individual foot
 void attachServos() {
-  for (int i=0; i<3; i++) {
+  for (int i = 0; i < 3; i++) {
     servos[0][i].attach(servo_pin[0][i]);
     delay(100);
     servos[1][i].attach(servo_pin[1][i]);
@@ -551,8 +555,7 @@ void getCmd() {
 
     } else {
       Serial.read();
-    } 
+    }
   }
   Serial.flush();
 }
-
