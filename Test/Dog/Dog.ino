@@ -15,7 +15,7 @@ const double offsets[4][3] = {
   { 125 + 2, 1.5, 0 - 15}, //4 was -20
   { 175 - 1.5, 58, 65 + 15 }, 
   { 124, 10 - 5 + 5, 40 + 10 + 5 -10},
-  { 131, 25, 125 + 10}
+  { 131, 25 - 5, 125 + 10 - 5 + 5}
 };
 
 // multipliers are multiplied with the input angle of a servo before feeding into servo
@@ -24,7 +24,7 @@ const double multipliers[4][3] = {
   { 1, 1.15, 1.15 }, // before: 1.12
   { 1, 1.08, 1 },
   { 1, 1.1, 1.08 },
-  { 1, 0.992, 1 + 0.2}
+  { 1, 0.992, 1 + 0.2 - 0.1}
 };
 
 // holds the angles that are fed into servos
@@ -112,6 +112,101 @@ void updateWalkPos() {
   walkPos[7][2] = STAND_Z;
 }
 
+
+//sidestep constants --------------------------------
+double PULL_IN_X = 3;
+double PULL_IN_Y = 0;
+double PULL_IN_Z = 3;
+double PUSH_OFF_Z = 2; 
+double SSMULT = 1;
+
+double sideStepPos[16][3];
+
+int x = 1;
+int y = 0;
+void updateSideStepPos() {
+
+  //stand straight
+  sideStepPos[0][x] = DEFAULT_X;
+  sideStepPos[0][y] = DEFAULT_Y;
+  sideStepPos[0][2] = STAND_Z;
+
+  //pull leg up and in a little
+  sideStepPos[1][x] = DEFAULT_X - (SSMULT * PULL_IN_X/2);
+  sideStepPos[1][y] = DEFAULT_Y;
+  sideStepPos[1][2] = STAND_Z - (SSMULT * PULL_IN_Z/2);
+
+  //pull leg up and in all the way
+  sideStepPos[2][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[2][y] = DEFAULT_Y;
+  sideStepPos[2][2] = STAND_Z - ( SSMULT * PULL_IN_Z);
+
+  //slightly push leg down while it's in
+  sideStepPos[3][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[3][y] = DEFAULT_Y;
+  sideStepPos[3][2] = STAND_Z - (SSMULT * PULL_IN_Z/2);
+
+  //completely push leg down while it's in
+  sideStepPos[3][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[3][y] = DEFAULT_Y;
+  sideStepPos[3][2] = STAND_Z;
+
+  //pick up leg but stay in inward position
+  sideStepPos[4][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[4][y] = DEFAULT_Y;
+  sideStepPos[4][2] = STAND_Z + PUSH_OFF_Z;
+
+  //pull leg up and out a little
+  sideStepPos[5][x] = DEFAULT_X - (SSMULT * PULL_IN_X/2);
+  sideStepPos[5][y] = DEFAULT_Y;
+  sideStepPos[5][2] = STAND_Z - (SSMULT * PULL_IN_Z/2);
+
+  //put leg back vertically and start lowering the leg
+  sideStepPos[6][x] = DEFAULT_X;
+  sideStepPos[6][y] = DEFAULT_Y;
+  sideStepPos[6][2] = STAND_Z - (SSMULT * PULL_IN_Z/2);
+
+  //lower leg and return to stand
+  sideStepPos[7][x] = DEFAULT_X;
+  sideStepPos[7][y] = DEFAULT_Y;
+  sideStepPos[7][2] = STAND_Z;
+
+  //stand straight again
+  sideStepPos[8][x] = DEFAULT_X;
+  sideStepPos[8][y] = DEFAULT_Y;
+  sideStepPos[8][2] = STAND_Z;
+
+  sideStepPos[9][x] = DEFAULT_X;
+  sideStepPos[9][y] = DEFAULT_Y;
+  sideStepPos[9][2] = STAND_Z;
+
+  sideStepPos[10][x] = DEFAULT_X;
+  sideStepPos[10][y] = DEFAULT_Y;
+  sideStepPos[10][2] = STAND_Z;
+
+  sideStepPos[11][x] = DEFAULT_X;
+  sideStepPos[11][y] = DEFAULT_Y;
+  sideStepPos[11][2] = STAND_Z;
+
+  sideStepPos[12][x] = DEFAULT_X;
+  sideStepPos[12][y] = DEFAULT_Y;
+  sideStepPos[12][2] = STAND_Z;
+
+  sideStepPos[13][x] = DEFAULT_X;
+  sideStepPos[13][y] = DEFAULT_Y;
+  sideStepPos[13][2] = STAND_Z;
+
+  sideStepPos[14][x] = DEFAULT_X;
+  sideStepPos[14][y] = DEFAULT_Y;
+  sideStepPos[14][2] = STAND_Z;
+
+  sideStepPos[15][x] = DEFAULT_X;
+  sideStepPos[15][y] = DEFAULT_Y;
+  sideStepPos[15][2] = STAND_Z;
+
+}
+
+
 double dancePos[4][3] = {
   { 0, 0, STAND_Z },
   { 0, 0, STAND_Z + 0.5 },
@@ -126,12 +221,6 @@ double dancePos2[4][3] = {
   { 0, -0.5, STAND_Z - 0.5 }
 };
 
-double sidestep[4][3] = {
-  {0, },
-  {},
-  {},
-  {}
-}
 
 
 // Setup and Loop ---------------------------------------------------------------------------
@@ -184,6 +273,28 @@ void loop() {
     updateWalkPos();
 
     walk(1);
+
+    // Serial.print("WalkDonw");
+  }
+
+  if (cmd == "sidestep") {
+    if (!isStanding) {
+      Serial.println("Not stood up");
+      cmd = "";
+      return;
+    }
+    // Setting up the walkPos array for walking
+    // STAND_Z = 13;
+    DEFAULT_X = 0;
+    DEFAULT_Y = 0;
+    PULL_IN_Y = 0;
+    PULL_IN_X = 2 - 4;
+    PULL_IN_Z = 3;
+    PUSH_OFF_Z = 6;
+
+    updateSideStepPos();
+
+    sideStep(1);
 
     // Serial.print("WalkDonw");
   }
@@ -348,6 +459,43 @@ void walk(int steps) {
     setFootPos(1, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 100);
     setFootPos(2, walkPos[(i + 4) % 8][0], walkPos[(i + 4) % 8][1], walkPos[(i + 4) % 8][2], 100);
     waitAllReach();
+  }
+}
+
+
+int s = 16;
+int stepOffset = 7; // try 8
+int standnum = 12;
+void sideStep(int steps) {
+  for (int i = 0; i <= s * steps -1; i++) {
+    switchSSMULT();
+    updateSideStepPos();
+    setFootPos(0, sideStepPos[i % s][0], sideStepPos[i % s][1], sideStepPos[i % s][2], 100);
+
+    switchSSMULT();
+    updateSideStepPos();
+    setFootPos(3, sideStepPos[i % s][0], sideStepPos[i % s][1], sideStepPos[i % s][2], 100);
+
+    // switchSSMULT();
+    // updateSideStepPos();
+    // setFootPos(1, sideStepPos[(i + stepOffset) % s][0], sideStepPos[(i + stepOffset) % s][1], sideStepPos[(i + stepOffset) % s][2], 100);
+    setFootPos(1, sideStepPos[standnum][0], sideStepPos[standnum][1], sideStepPos[standnum][2], 100);
+
+    // switchSSMULT();
+    // updateSideStepPos();
+    // setFootPos(2, sideStepPos[(i + stepOffset) % s][0], sideStepPos[(i + stepOffset) % s][1], sideStepPos[(i + stepOffset) % s][2], 100);
+    setFootPos(2, sideStepPos[standnum][0], sideStepPos[standnum][1], sideStepPos[standnum][2], 100);
+
+    waitAllReach();
+  }
+}
+
+void switchSSMULT() {
+  if (SSMULT == 1){
+    SSMULT = -1;
+  }
+  else {
+    SSMULT = 1;
   }
 }
 
