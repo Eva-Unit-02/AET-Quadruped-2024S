@@ -297,11 +297,13 @@ void loop() {
   }
 
   if ((cmd == "stand")) {  //||(CommandNum == 1)) {
+    Serial.println("standing");
     stand();
     cmd = "";
   }
 
   if ((cmd == "sit")) {  //||(CommandNum == 0)) {
+    Serial.println("sitting");
     sit();
     cmd = "";
   }
@@ -312,6 +314,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("walking");
     // Setting up the walkPos array for walking
     // STAND_Z = 13;
     DEFAULT_X = 0;
@@ -333,6 +336,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("sidestepping");
     // Setting up the walkPos array for walking
     // STAND_Z = 13;
     DEFAULT_X = 0;
@@ -355,6 +359,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("backwalking");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -373,6 +378,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("fastwalking");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -391,6 +397,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("turningl");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -409,6 +416,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("turningr");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -427,6 +435,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("walkturning");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -445,6 +454,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("dancing");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
@@ -463,6 +473,7 @@ void loop() {
       cmd = "";
       return;
     }
+    Serial.println("dancing2");
     // STAND_Z = 13;
     DEFAULT_X = 0;
     DEFAULT_Y = 0;
