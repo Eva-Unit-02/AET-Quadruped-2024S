@@ -6,7 +6,7 @@ int degree = 0;
 int offset = 0;
 float multiplier = 1;
 String prompt = "";
-int pinNum = 2;
+int pinNum = 13;
 
 void setup() {
   Serial.begin(9600);

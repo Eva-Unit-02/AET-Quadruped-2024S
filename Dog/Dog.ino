@@ -12,10 +12,10 @@ const double tolerance = 0.001;
 
 // Offsets are added to the input angles of a servo before feeding into servo
 const double offsets[4][3] = {
-  { 120, 0, 20 },
-  { 143, 145, 125 },
-  { 80, 95, 80 },
-  { 45, 130, 120 }
+  { 122, 0, 40 },
+  { 143, 140, 145 },
+  { 80, 97, 76 },
+  { 45, 130, 75 }
 };
 
 
@@ -24,8 +24,8 @@ const double offsets[4][3] = {
 const double multipliers[4][3] = {
   { 1, 1, 1 },
   { 1, 1, 1 },
-  { 1, 1, 1 },
-  { 1, 1, 1 }
+  { 1, 1, 1.2 },
+  { 1, 1, 1.2 }
 };
 
 // holds the angles that are fed into servos
@@ -124,66 +124,70 @@ void updateWalkPosQ() {
   walkPosQ[0][2] = STAND_Z;
 
   walkPosQ[1][0] = DEFAULT_X + WALK_X / 8;
-  walkPosQ[1][1] = DEFAULT_Y;
+  walkPosQ[1][1] = DEFAULT_Y + WALK_Y / 8;
   walkPosQ[1][2] = STAND_Z;
 
   walkPosQ[1 + 1][0] = DEFAULT_X + WALK_X / 4;  //new
-  walkPosQ[1 + 1][1] = DEFAULT_Y;
+  walkPosQ[1 + 1][1] = DEFAULT_Y + WALK_Y / 4;
   walkPosQ[1 + 1][2] = STAND_Z;
 
-  walkPosQ[2 + 1][0] = DEFAULT_X + WALK_X / 2;
-  walkPosQ[2 + 1][1] = DEFAULT_Y;
+  walkPosQ[2 + 1][0] = DEFAULT_X + WALK_X / 3;
+  walkPosQ[2 + 1][1] = DEFAULT_Y + WALK_Y / 3;
   walkPosQ[2 + 1][2] = STAND_Z;
 
   walkPosQ[3 + 1][0] = DEFAULT_X + WALK_X;
-  walkPosQ[3 + 1][1] = DEFAULT_Y;
+  walkPosQ[3 + 1][1] = DEFAULT_Y + WALK_Y;
   walkPosQ[3 + 1][2] = STAND_Z;
 
-  walkPosQ[4 + 1][0] = DEFAULT_X + WALK_X / 2;  //added /2 10/04/24
-  walkPosQ[4 + 1][1] = DEFAULT_Y;
+  walkPosQ[4 + 1][0] = DEFAULT_X + WALK_X / 3;  //added /2 10/04/24
+  walkPosQ[4 + 1][1] = DEFAULT_Y + WALK_Y / 3;
   walkPosQ[4 + 1][2] = STAND_Z;
 
   walkPosQ[5 + 1][0] = DEFAULT_X + WALK_X / 4;  //new
-  walkPosQ[5 + 1][1] = DEFAULT_Y;
+  walkPosQ[5 + 1][1] = DEFAULT_Y + WALK_Y / 4;
   walkPosQ[5 + 1][2] = STAND_Z;
 
   walkPosQ[6 + 1][0] = DEFAULT_X + WALK_X / 8;
-  walkPosQ[6 + 1][1] = DEFAULT_Y;
+  walkPosQ[6 + 1][1] = DEFAULT_Y + WALK_Y / 8;
   walkPosQ[6 + 1][2] = STAND_Z;
 }
 
 //sidestep constants --------------------------------
 double PULL_IN_X = 3;
 double PULL_IN_Y = 0;
-double PULL_IN_Z = 3;
-double PUSH_OFF_Z = 2;
+double PULL_IN_Z = 2;
+double PUSH_OFF_Z = 1;
 double SSMULT = 1;
 
 double sideStepPos[16][3];
 
-int x = 1;  // this is actually the y axis but i'm calling it my x
-int y = 0;
+
+
+// sidestep does not work because the changes being made to z should be made to y or x instead
+int x = 0; 
+int y = 1;
+int z = 2;
 void updateSideStepPos() {
 
   //stand straight
   sideStepPos[0][x] = DEFAULT_X;
-  sideStepPos[0][y] = DEFAULT_Y;
-  sideStepPos[0][2] = STAND_Z;
+  sideStepPos[0][z] = DEFAULT_Y;
+  sideStepPos[0][z] = STAND_Z;
 
   //pull leg up and in a little
   sideStepPos[1][x] = DEFAULT_X - (SSMULT * PULL_IN_X / 2);
-  sideStepPos[1][y] = DEFAULT_Y;
-  sideStepPos[1][2] = STAND_Z - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[1][y] = DEFAULT_Y - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[1][2] = STAND_Z;
 
   //pull leg up and in all the way
   sideStepPos[2][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
-  sideStepPos[2][y] = DEFAULT_Y;
-  sideStepPos[2][2] = STAND_Z - (SSMULT * PULL_IN_Z);
+  sideStepPos[2][y] = DEFAULT_Y - (SSMULT * PULL_IN_Z);
+  sideStepPos[2][2] = STAND_Z;
 
   //slightly push leg down while it's in
   sideStepPos[3][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
-  sideStepPos[3][y] = DEFAULT_Y;
-  sideStepPos[3][2] = STAND_Z - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[3][y] = DEFAULT_Y - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[3][2] = STAND_Z;
 
   //completely push leg down while it's in
   sideStepPos[3][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
@@ -192,18 +196,18 @@ void updateSideStepPos() {
 
   //pick up leg but stay in inward position
   sideStepPos[4][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
-  sideStepPos[4][y] = DEFAULT_Y;
-  sideStepPos[4][2] = STAND_Z + PUSH_OFF_Z;
+  sideStepPos[4][y] = DEFAULT_Y + PUSH_OFF_Z;
+  sideStepPos[4][2] = STAND_Z;
 
   //pull leg up and out a little
   sideStepPos[5][x] = DEFAULT_X - (SSMULT * PULL_IN_X / 2);
-  sideStepPos[5][y] = DEFAULT_Y;
-  sideStepPos[5][2] = STAND_Z - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[5][y] = DEFAULT_Y - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[5][2] = STAND_Z;
 
   //put leg back vertically and start lowering the leg
   sideStepPos[6][x] = DEFAULT_X;
-  sideStepPos[6][y] = DEFAULT_Y;
-  sideStepPos[6][2] = STAND_Z - (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[6][y] = DEFAULT_Y- (SSMULT * PULL_IN_Z / 2);
+  sideStepPos[6][2] = STAND_Z;
 
   //lower leg and return to stand
   sideStepPos[7][x] = DEFAULT_X;
@@ -211,32 +215,32 @@ void updateSideStepPos() {
   sideStepPos[7][2] = STAND_Z;
 
   //stand straight again
-  sideStepPos[8][x] = DEFAULT_X;
-  sideStepPos[8][y] = DEFAULT_Y;
+  sideStepPos[8][x] = DEFAULT_X - (SSMULT * PULL_IN_X / 2);
+  sideStepPos[8][y] = DEFAULT_Y + (SSMULT * PULL_IN_Z / 2);
   sideStepPos[8][2] = STAND_Z;
 
-  sideStepPos[9][x] = DEFAULT_X;
-  sideStepPos[9][y] = DEFAULT_Y;
+  sideStepPos[9][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[9][y] = DEFAULT_Y + (SSMULT * PULL_IN_Z);
   sideStepPos[9][2] = STAND_Z;
 
-  sideStepPos[10][x] = DEFAULT_X;
-  sideStepPos[10][y] = DEFAULT_Y;
+  sideStepPos[10][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
+  sideStepPos[10][y] = DEFAULT_Y + (SSMULT * PULL_IN_Z / 2);
   sideStepPos[10][2] = STAND_Z;
 
-  sideStepPos[11][x] = DEFAULT_X;
+  sideStepPos[11][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
   sideStepPos[11][y] = DEFAULT_Y;
   sideStepPos[11][2] = STAND_Z;
 
-  sideStepPos[12][x] = DEFAULT_X;
+  sideStepPos[12][x] = DEFAULT_X - (SSMULT * PULL_IN_X);
   sideStepPos[12][y] = DEFAULT_Y;
   sideStepPos[12][2] = STAND_Z;
 
-  sideStepPos[13][x] = DEFAULT_X;
-  sideStepPos[13][y] = DEFAULT_Y;
+  sideStepPos[13][x] = DEFAULT_X - (SSMULT * PULL_IN_X / 2);
+  sideStepPos[13][y] = DEFAULT_Y + (SSMULT * PULL_IN_Z / 2);
   sideStepPos[13][2] = STAND_Z;
 
   sideStepPos[14][x] = DEFAULT_X;
-  sideStepPos[14][y] = DEFAULT_Y;
+  sideStepPos[14][y] = DEFAULT_Y + (SSMULT * PULL_IN_Z / 2);
   sideStepPos[14][2] = STAND_Z;
 
   sideStepPos[15][x] = DEFAULT_X;
@@ -275,40 +279,59 @@ void setup() {
   attachServos();
 
   updateWalkPos();
+
+  pinMode(A0, INPUT_PULLUP);
+  pinMode(A1, INPUT_PULLUP);
+  pinMode(A2, INPUT_PULLUP);
+  pinMode(A3, INPUT_PULLUP);
+  pinMode(A4, INPUT_PULLUP);
+  pinMode(A5, INPUT_PULLUP);
 }
 
-//int CommandNum;
+int CommandNum;
+int oldCommandNum = 100;
 
 void loop() {
   getCmd();
 
+  if (digitalRead(A5)==HIGH) { //checks if SELECT is true
+    //reset value
+    CommandNum = 0;
+    if (digitalRead(A0)==HIGH) CommandNum += 1;
+    if (digitalRead(A1)==HIGH) CommandNum += 2;
+    if (digitalRead(A2)==HIGH) CommandNum += 4;
+    if (digitalRead(A3)==HIGH) CommandNum += 8;
 
-  // if (digitalRead(A5)==HIGH) { //checks if SELECT is true
-  //   //reset value
-  //   if (digitalRead(A5)==HIGH) CommandNum += 1; //absolutely abhorrent way to count binary. I'm ashamed.
-  //   if (digitalRead(A4)==HIGH) CommandNum += 2;
-  //   if (digitalRead(A3)==HIGH) CommandNum += 4;
-  //   if (digitalRead(A2)==HIGH) CommandNum += 8;
-  // }
+    Serial.print("Received: ");
+    Serial.print(digitalRead(A3));
+    Serial.print(digitalRead(A2));
+    Serial.print(digitalRead(A1));
+    Serial.println(digitalRead(A0));
+  }
+  if (oldCommandNum != CommandNum) {
+    Serial.print("CommandNum: ");
+    Serial.println(CommandNum);
+  }
+  oldCommandNum = CommandNum;
 
   if (cmd == "clear") {
     Serial.print("cmd cleared");
     cmd = "";
   }
 
-  if ((cmd == "stand")) {  //||(CommandNum == 1)) {
+  if ((cmd == "stand") ||(CommandNum == 1)) {
     Serial.println("standing");
     stand();
     cmd = "";
   }
 
-  if ((cmd == "sit")) {  //||(CommandNum == 0)) {
+  if ((cmd == "sit") ||(CommandNum == 13)) {
     Serial.println("sitting");
     sit();
     cmd = "";
   }
 
-  if ((cmd == "walk")) {  //||(CommandNum == 2)) {
+  if ((cmd == "walk") ||(CommandNum == 2)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -329,8 +352,29 @@ void loop() {
 
     // Serial.print("WalkDonw");
   }
+  if ((cmd == "walkq") ||(CommandNum == 11)) {
+    if (!isStanding) {
+      Serial.println("Not stood up");
+      cmd = "";
+      return;
+    }
+    Serial.println("walking");
+    // Setting up the walkPos array for walking
+    // STAND_Z = 13;
+    DEFAULT_X = 0;
+    DEFAULT_Y = 0;
+    WALK_X = 2 + 1;
+    WALK_Y = 0;
+    WALK_Z = 3 + 1;
 
-  if ((cmd == "sidestep")) {  //||(CommandNum == 4)) {
+    updateWalkPosQ();
+
+    walkQ(1);
+
+    // Serial.print("WalkDonw");
+  }
+
+  if ((cmd == "sidestep") ||(CommandNum == 10)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -353,7 +397,7 @@ void loop() {
     // Serial.print("WalkDonw");
   }
 
-  if ((cmd == "walk_back")) {  //||(CommandNum == 3)) {
+  if ((cmd == "walk_back") ||(CommandNum == 3)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -372,7 +416,7 @@ void loop() {
     walk(1);
   }
 
-  if ((cmd == "walk_fast")) {  //||(CommandNum == 4)) {
+  if ((cmd == "walk_fast") ||(CommandNum == 4)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -391,7 +435,7 @@ void loop() {
     walk(1);
   }
 
-  if ((cmd == "turn_l")) {  //||(CommandNum == 7)) {
+  if ((cmd == "turn_l") ||(CommandNum == 7)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -410,7 +454,7 @@ void loop() {
     turn(1);
   }
 
-  if ((cmd == "turn_r")) {  //||(CommandNum == 8)) {
+  if ((cmd == "turn_r") ||(CommandNum == 8)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -429,7 +473,7 @@ void loop() {
     turn(1);
   }
 
-  if ((cmd == "walk_turn_left")) {  //||(CommandNum == 9)) {
+  if ((cmd == "walk_turn_left")||(CommandNum == 9)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -448,7 +492,26 @@ void loop() {
     turn(1);
   }
 
-  if ((cmd == "dance")) {  //||(CommandNum == 5)) {
+  if ((cmd == "walk_turn_right")||(CommandNum == 12)) {
+    if (!isStanding) {
+      Serial.println("Not stood up");
+      cmd = "";
+      return;
+    }
+    Serial.println("walkturning");
+    // STAND_Z = 13;
+    DEFAULT_X = 0;
+    DEFAULT_Y = 0;
+    WALK_X = 1.7;
+    WALK_Y = 1.7;
+    WALK_Z = 3;
+
+    updateWalkPos();
+
+    turn(1);
+  }
+
+  if ((cmd == "dance")|(CommandNum == 5)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -467,7 +530,7 @@ void loop() {
     dance(1);
   }
 
-  if ((cmd == "dance2")) {  //||(CommandNum == 6)) {
+  if ((cmd == "dance2")||(CommandNum == 6)) {
     if (!isStanding) {
       Serial.println("Not stood up");
       cmd = "";
@@ -487,7 +550,7 @@ void loop() {
   }
 
 
-  if ((cmd == "s")) {  //||(CommandNum == 12)) {
+  if (cmd == "s") {
     resetToStand();
     cmd = "";
   }
@@ -495,10 +558,10 @@ void loop() {
 
 
 void stand() {
-  setFootPos(0, DEFAULT_X, 0, STAND_Z, 1000);
-  setFootPos(1, DEFAULT_X, 0, STAND_Z, 1000);
-  setFootPos(2, DEFAULT_X, 0, STAND_Z, 1000);
-  setFootPos(3, DEFAULT_X, 0, STAND_Z, 1000);
+  setFootPos(0, DEFAULT_X, 0, STAND_Z, 500);
+  setFootPos(1, DEFAULT_X, 0, STAND_Z, 500);
+  setFootPos(2, DEFAULT_X, 0, STAND_Z, 500);
+  setFootPos(3, DEFAULT_X, 0, STAND_Z, 500);
   waitAllReach();
   isStanding = true;
 }
@@ -543,11 +606,11 @@ int standnum = 12;
 void sideStep(int steps) {
   for (int i = 0; i <= s * steps - 1; i++) {
     switchSSMULT();
-    updateSideStepPos();
+    //updateSideStepPos();
     setFootPos(0, sideStepPos[i % s][0], sideStepPos[i % s][1], sideStepPos[i % s][2], 100);
 
     switchSSMULT();
-    updateSideStepPos();
+    //updateSideStepPos();
     setFootPos(3, sideStepPos[i % s][0], sideStepPos[i % s][1], sideStepPos[i % s][2], 100);
 
     // switchSSMULT();
@@ -560,6 +623,7 @@ void sideStep(int steps) {
     // setFootPos(2, sideStepPos[(i + stepOffset) % s][0], sideStepPos[(i + stepOffset) % s][1], sideStepPos[(i + stepOffset) % s][2], 100);
     setFootPos(2, sideStepPos[standnum][0], sideStepPos[standnum][1], sideStepPos[standnum][2], 100);
 
+    updateSideStepPos();
     waitAllReach();
   }
 }
@@ -767,7 +831,6 @@ void attachServos() {
 void getCmd() {
   // if (Serial.available() > 0 && (cmd == "" || cmd == "walk")) {
   if (Serial.available() > 0) {
-
     if (Serial.peek() != '\n') {
       cmd = Serial.readStringUntil('\n');
 
